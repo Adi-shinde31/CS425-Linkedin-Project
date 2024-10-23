@@ -24,6 +24,21 @@ def create_experience(connection):
     end = input("Enter End Date (YYYY-MM-DD): ")
     description = input("Enter Description: ")
 
+    # Error handling for date validation
+    if(end==""):
+        query = """INSERT INTO experience (user_id, institution_id, start, description, title)
+               VALUES (%s, %s, %s, %s, %s)"""
+        values = (user_id, institution_id, start, description, title)
+        cursor.execute(query, values)
+        connection.commit()
+        experience_id = cursor.lastrowid
+        print(f"Experience created successfully with ID: {experience_id}")
+        cursor.close()
+        return
+    if(end!=""):
+        if start >= end:
+            print("Error: Start date must be earlier than end date.")
+            return
     query = """INSERT INTO experience (user_id, institution_id, start, end, description, title)
                VALUES (%s, %s, %s, %s, %s, %s)"""
     values = (user_id, institution_id, start, end, description, title)
@@ -48,8 +63,8 @@ def read_experience(connection):
 
 def update_experience(connection):
     cursor = connection.cursor()
-    experience_id = input("Enter Experience ID to update: ")
-    fields = ["user_id", "institution_id", "title", "company", "location", "start_date", "end_date", "description"]
+    exp_id = input("Enter Experience ID to update: ")
+    fields = ["user_id", "institution_id", "title", "company", "location", "start", "end", "description"]
     updates = []
     values = []
 
@@ -63,8 +78,8 @@ def update_experience(connection):
         print("No fields to update")
         return
 
-    query = f"UPDATE experience SET {', '.join(updates)} WHERE id = %s"
-    values.append(experience_id)
+    query = f"UPDATE experience SET {', '.join(updates)} WHERE exp_id = %s"
+    values.append(exp_id)
 
     cursor.execute(query, tuple(values))
     connection.commit()
